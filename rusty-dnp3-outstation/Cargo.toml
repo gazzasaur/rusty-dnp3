@@ -1,10 +1,12 @@
 [package]
 name = "rusty-dnp3-outstation"
-authors.workspace = true
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-homepage.workspace = true
-repository.workspace = true
+description = "An implementation of a DNP3 outstation. This does not store any points. It acts as an API to a protocol."
+
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+version = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [dependencies]

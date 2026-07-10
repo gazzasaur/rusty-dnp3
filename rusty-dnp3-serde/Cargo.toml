@@ -1,6 +1,12 @@
 [package]
 name = "rusty-dnp3-serde"
-version = "0.1.0"
-edition = "2024"
+description = "Implements a DNP3 serialiser and deserialiser. This package may be used offline and purposefully avoids IO and hence async. It does not contain a network stack and so may be used offline."
+
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+version = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [dependencies]

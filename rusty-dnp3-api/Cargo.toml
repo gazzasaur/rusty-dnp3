@@ -1,6 +1,12 @@
 [package]
 name = "rusty-dnp3-api"
-version = "0.1.0"
-edition = "2024"
+description = "Holds the DNP3 model and common API elements used by other rusty-dnp3 pacakges."
+
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+version = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [dependencies]
