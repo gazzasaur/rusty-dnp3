@@ -1,0 +1,37 @@
+[workspace]
+resolver = "3"
+members = ["rusty-dnp3", "rusty-dnp3-api", "rusty-dnp3-master", "rusty-dnp3-outstation", "rusty-dnp3-serde"]
+
+[workspace.package]
+authors = ["Graeme Farquharson"]
+version = "0.0.1"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/gazzasaur/rusty-dnp3"
+repository = "https://github.com/gazzasaur/rusty-dnp3"
+
+[workspace.dependencies]
+rusty-dnp3 = { path = "./rusty-dnp3", version = "0.0.1" }
+rusty-dnp3-serde = { path = "./rusty-dnp3-serde", version = "0.0.1" }
+rusty-dnp3-api = { path = "./rusty-dnp3-api", version = "0.0.1" }
+
+rand = "0.9"
+bytes = "1.10"
+chrono = "0.4"
+futures = "0.3"
+tracing = "0.1"
+bitfield = "0.19"
+thiserror = "2.0"
+num-derive = "0.4"
+num-bigint = "0.4"
+num-traits = "0.2"
+async-trait = "0.1"
+num-bigfloat = "1.7"
+tokio = { version = "1.47", features = ["full"] }
+strum = { version = "0.27", features = ["derive"] }
+der-parser = { version = "10.0", features = ["bigint", "serialize"] }
+
+# Testing Only
+hex = "0.4"
+anyhow = "1.0"
+tracing-test = "0.2"
