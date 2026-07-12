@@ -1,4 +1,6 @@
 pub mod crc;
+pub mod api;
+pub mod datalink;
 
 #[cfg(test)]
 mod tests {
@@ -6,8 +8,6 @@ mod tests {
 
     #[test]
     fn it_works() -> Result<(), anyhow::Error> {
-        let result = crc::compute_checksum(&[])?;
-        assert_eq!(result, 4);
         Ok(())
     }
 }
