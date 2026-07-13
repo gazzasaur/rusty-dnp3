@@ -1,6 +1,7 @@
 pub mod crc;
 pub mod api;
 pub mod datalink;
+pub mod transport;
 
 #[cfg(test)]
 mod tests {

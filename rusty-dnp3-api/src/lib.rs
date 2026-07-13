@@ -9,6 +9,12 @@ pub enum RustyDnp3Error {
     #[error("failed to calculate dnp3 checksum, {reason}")]
     ChecksumCalculation { reason: String },
 
+    #[error("failed to serialise dnp3 payload, {reason}")]
+    SerialisationError { reason: String },
+
+    #[error("a dnp3 violation was detected, {reason}")]
+    ValidationError { reason: String },
+
     #[error("unknown dnp3 error, {reason}")]
     Unknown { reason: String },
 }
