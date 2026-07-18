@@ -2,8 +2,6 @@ use std::fmt::Debug;
 
 use thiserror::Error;
 
-use crate::DataPointObjectList::{NoRange, StartAndStop};
-
 #[derive(Error, Debug)]
 pub enum RustyDnp3Error {
     #[error("failed to calculate dnp3 checksum, {reason}")]
@@ -12,6 +10,9 @@ pub enum RustyDnp3Error {
     #[error("failed to serialise dnp3 payload, {reason}")]
     SerialisationError { reason: String },
 
+    #[error("failed to deserialise dnp3 payload, {reason}")]
+    DeserialisationError { reason: String },
+
     #[error("a dnp3 violation was detected, {reason}")]
     ValidationError { reason: String },
 
@@ -19,24 +20,8 @@ pub enum RustyDnp3Error {
     Unknown { reason: String },
 }
 
-fn a() {
-    let b = Dnp3ObjectList::BinaryInputDataPointObject(StartAndStop(RangeSpecifier::OneOctet(0), vec![]));
-    match &b {
-        Dnp3ObjectList::BinaryInputDataPointObject(data_point_object_list) => c(data_point_object_list),
-    };
-}
-
-fn c<'a, T: DataPointObject>(f: &'a DataPointObjectList<T>) -> Option<&'a Vec<IndexedDataPointObject<u8, T>>> {
-    match f {
-        NoRange => return None,
-        StartAndStop(range_specifier, items) => return None,
-        DataPointObjectList::OneOctetIndex(range_specifier_size, indexed_data_point_objects) => return Some(indexed_data_point_objects),
-        DataPointObjectList::TwoOctetIndex(range_specifier_size, indexed_data_point_objects) => return None,
-        DataPointObjectList::FourOctetIndex(range_specifier_size, indexed_data_point_objects) => return None,
-    };
-}
-
 pub enum Dnp3ObjectList {
+    BinaryInputDataPointFlags(BinaryInputDataPointFlags),
     BinaryInputDataPointObject(DataPointObjectList<BinaryInputDataPointObject>),
 }
 
@@ -46,10 +31,73 @@ pub enum RangeSpecifier {
     FourOctets(u32),
 }
 
+impl RangeSpecifier {
+    pub fn range_qualifier_code(&self) -> Vec<u8> {
+        match self {
+            RangeSpecifier::OneOctet(_) => vec![0x00],
+            RangeSpecifier::TwoOctets(_) => vec![0x01],
+            RangeSpecifier::FourOctets(_) => vec![0x02],
+        }
+    }
+
+    pub fn octet_size(&self) -> u8 {
+        match self {
+            RangeSpecifier::OneOctet(_) => 1,
+            RangeSpecifier::TwoOctets(_) => 2,
+            RangeSpecifier::FourOctets(_) => 4,
+        }
+    }
+
+    pub fn add(&self, value: usize) -> Result<RangeSpecifier, RustyDnp3Error> {
+        let error = || RustyDnp3Error::SerialisationError { reason: format!("start stop range exceeds octet size bounds") };
+        match self {
+            RangeSpecifier::OneOctet(x) => (value + *x as usize).try_into().map(|y| RangeSpecifier::OneOctet(y)).map_err(|_| error()),
+            RangeSpecifier::TwoOctets(x) => (value + *x as usize).try_into().map(|y| RangeSpecifier::TwoOctets(y)).map_err(|_| error()),
+            RangeSpecifier::FourOctets(x) => (value + *x as usize).try_into().map(|y| RangeSpecifier::FourOctets(y)).map_err(|_| error()),
+        }
+    }
+}
+
+impl From<RangeSpecifier> for Vec<u8> {
+    fn from(value: RangeSpecifier) -> Self {
+        (&value).into()
+    }
+}
+
+impl From<&RangeSpecifier> for Vec<u8> {
+    fn from(value: &RangeSpecifier) -> Self {
+        match value {
+            RangeSpecifier::OneOctet(x) => x.to_le_bytes().to_vec(),
+            RangeSpecifier::TwoOctets(x) => x.to_le_bytes().to_vec(),
+            RangeSpecifier::FourOctets(x) => x.to_le_bytes().to_vec(),
+        }
+    }
+}
+
 pub enum RangeSpecifierSize {
     OneOctet,
     TwoOctets,
     FourOctets,
+}
+
+impl From<&RangeSpecifierSize> for RangeSpecifier {
+    fn from(value: &RangeSpecifierSize) -> Self {
+        match value {
+            RangeSpecifierSize::OneOctet => RangeSpecifier::OneOctet(0),
+            RangeSpecifierSize::TwoOctets => RangeSpecifier::TwoOctets(0),
+            RangeSpecifierSize::FourOctets => RangeSpecifier::FourOctets(0),
+        }
+    }
+}
+
+impl From<RangeSpecifierSize> for RangeSpecifier {
+    fn from(value: RangeSpecifierSize) -> Self {
+        match value {
+            RangeSpecifierSize::OneOctet => RangeSpecifier::OneOctet(0),
+            RangeSpecifierSize::TwoOctets => RangeSpecifier::TwoOctets(0),
+            RangeSpecifierSize::FourOctets => RangeSpecifier::FourOctets(0),
+        }
+    }
 }
 
 pub enum DataPointObjectList<T: DataPointObject> {
@@ -79,6 +127,11 @@ pub enum Dnp3Timestamp {
     None,
     Relative(u64),
     Absolute(u64),
+}
+
+pub struct BinaryInputDataPointFlags {
+    pub start_index: RangeSpecifier,
+    pub flags: Vec<bool>,
 }
 
 pub struct BinaryInputDataPointObject {
